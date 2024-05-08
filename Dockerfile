@@ -23,7 +23,7 @@ WORKDIR /app
 RUN wget -q https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/webui.sh
 
 # Expose the port
-EXPOSE 7861
+EXPOSE 7860 7861
 
 # Set the entrypoint to run
 ENTRYPOINT ["bash", "webui.sh"]
