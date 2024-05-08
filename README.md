@@ -6,15 +6,15 @@ This repository automatically publishes Docker images for the [Stable Diffusion 
 
 Two Docker images are published to the GitHub Container Registry for each update:
 
-- `ghcr.io/jemeyer/stable-diffusion-webui:latest` - Image tagged with `latest` pointing to the most recent commit.
+- `ghcr.io/jemeyer/stable-diffusion-webui:latest` - Image tagged with `latest` pointing to the most recent published version.
 - `ghcr.io/jemeyer/stable-diffusion-webui:VERSION` - Image tagged with the specific released version from the source repo.
-- `ghcr.io/jemeyer/stable-diffusion-webui:hash_COMMIT_HASH` - Image tagged with the specific commit hash of the source repository. Used for ad-hoc builds
+- `ghcr.io/jemeyer/stable-diffusion-webui:main` - Image tagged with 'main' points to the most bleeding-edge container - this is built nightly off of the source repo's main branch.
 
 ## Usage
 
 ### Docker Run
 
-To use the most recent ComfyUI image, pull the `latest` tag:
+To use the most recent stable image, pull the `latest` tag:
 
 ```bash
 docker run -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
@@ -87,7 +87,7 @@ docker-compose up -d
 
 ## Update Schedule
 
-This repository checks for updates to the AUTOMATIC1111 master branch on a daily basis. If a new commit has been pushed, a new docker image will be created. If an image for that commit doesn't already exist, a new Docker image will be built and published under the tags `latest`, `hash_<COMMIT>`, and `<VERSION>`, where the version tag will match the release versions on the main repo.
+This repository checks for updates to the AUTOMATIC1111 master branch on a daily basis. Every night it will publish a new 'main' image. If there has been a code release of the main repo, a new Docker image will be built and published under the tags `latest` and `<VERSION>`, where the version tag will match the release versions on the main repo.
 
 ## Contributing
 
