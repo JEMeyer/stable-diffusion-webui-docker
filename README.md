@@ -17,7 +17,7 @@ Two Docker images are published to the GitHub Container Registry for each update
 To use the most recent stable image, pull the `latest` tag:
 
 ```bash
-docker run -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
+docker run -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui:latest
 ```
 
 This will start the server and make it accessible at <http://localhost:7861>.
@@ -29,19 +29,19 @@ If you have an NVIDIA GPU and want to use it with the UI, you can pass the --gpu
 - To use all available GPUs:
 
 ```bash
-docker run --gpus all -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus all -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui:latest
 ```
 
 - To use a specific number of GPUs:
 
 ```bash
-docker run --gpus 2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus 2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui:latest
 ```
 
 - To use a specific GPU by its device ID (e.g., GPU 2):
 
 ```bash
-docker run --gpus device=2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus device=2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui:latest
 ```
 
 Note that you need to have the NVIDIA Container Toolkit installed on your host for GPU passthrough to work.
