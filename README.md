@@ -17,10 +17,10 @@ Two Docker images are published to the GitHub Container Registry for each update
 To use the most recent ComfyUI image, pull the `latest` tag:
 
 ```bash
-docker run -p 8188:8188 ghcr.io/jemeyer/stable-diffusion-webui
+docker run -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
 ```
 
-This will start the server and make it accessible at <http://localhost:8188>.
+This will start the server and make it accessible at <http://localhost:7861>.
 
 #### GPU Configuration
 
@@ -29,19 +29,19 @@ If you have an NVIDIA GPU and want to use it with the UI, you can pass the --gpu
 - To use all available GPUs:
 
 ```bash
-docker run --gpus all -p 8188:8188 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus all -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
 ```
 
 - To use a specific number of GPUs:
 
 ```bash
-docker run --gpus 2 -p 8188:8188 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus 2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
 ```
 
 - To use a specific GPU by its device ID (e.g., GPU 2):
 
 ```bash
-docker run --gpus device=2 -p 8188:8188 ghcr.io/jemeyer/stable-diffusion-webui
+docker run --gpus device=2 -p 7861:7861 ghcr.io/jemeyer/stable-diffusion-webui
 ```
 
 Note that you need to have the NVIDIA Container Toolkit installed on your host for GPU passthrough to work.
@@ -55,7 +55,7 @@ services:
   stable-diffusion-webui:
     image: ghcr.io/jemeyer/stable-diffusion-webui:latest
     ports:
-      - 8188:8188
+      - 7861:7861
     deploy:
       resources:
         reservations:
@@ -65,7 +65,7 @@ services:
               capabilities: [gpu]
 ```
 
-This configuration will start a container using the latest image and make it accessible at <http://localhost:8188>. It also configures the container to use 1 GPU.
+This configuration will start a container using the latest image and make it accessible at <http://localhost:7861>. It also configures the container to use 1 GPU.
 
 To use a specific GPU, you can use the device_ids property instead of count:
 
