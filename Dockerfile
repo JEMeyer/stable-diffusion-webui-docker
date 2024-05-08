@@ -18,5 +18,11 @@ RUN wget -q https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-web
 # Expose the port
 EXPOSE 7861
 
+# Create a non-root user
+RUN useradd -m appuser
+
+# Switch to the non-root user
+USER appuser
+
 # Set the entrypoint to run
 ENTRYPOINT ["bash", "webui.sh"]
