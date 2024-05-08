@@ -1,8 +1,6 @@
 name: Force Docker Build
 
 on:
-  schedule:
-    - cron: "0 0 * * *" # Run daily at midnight
   workflow_dispatch:
 
 jobs:
