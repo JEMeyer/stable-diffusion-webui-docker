@@ -46,19 +46,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if Docker version exists
+      - name: Check if commit Docker version exists
         id: commit_hash_check
         env:
           IMAGE_NAME: ${{ env.OWNER_LC }}/stable-diffusion-webui
-          IMAGE_TAG: ${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
+          IMAGE_TAG: hash_${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
         run: |
           TOKEN=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
-          result=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" https://ghcr.io/v2/${IMAGE_NAME}/manifests/hash_${IMAGE_TAG})
+          result=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" https://ghcr.io/v2/${IMAGE_NAME}/manifests/${IMAGE_TAG})
           if [ $result -eq 200 ]; then
-            echo "Image ${IMAGE_NAME}:hash_${IMAGE_TAG} already exists"
+            echo "Image ${IMAGE_NAME}:${IMAGE_TAG} already exists"
             echo "VERSION_EXISTS=true" >> $GITHUB_OUTPUT
           else
-            echo "Image ${IMAGE_NAME}:hash_${IMAGE_TAG} does not exist"
+            echo "Image ${IMAGE_NAME}:${IMAGE_TAG} does not exist"
             echo "VERSION_EXISTS=false" >> $GITHUB_OUTPUT
           fi
 
@@ -85,8 +85,8 @@ jobs:
           push: false
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:latest
-            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
-            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ needs.check_release.outputs.release_version }}
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ needs.check_release.outputs.release_version }}
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
 
       - name: Push Docker image with commit hash
         if: steps.commit_hash_check.outputs.VERSION_EXISTS == 'false'
@@ -96,7 +96,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:latest
-            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ needs.check_release.outputs.release_version }}
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
 
       - name: Push Docker image with release version
         if: steps.release_version_check.outputs.RELEASE_VERSION_EXISTS == 'false'
@@ -105,4 +105,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ needs.check_release.outputs.release_version }}
