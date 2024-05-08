@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Build Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5.3.0
         with:
           context: .
           push: false
@@ -90,7 +90,7 @@ jobs:
 
       - name: Push Docker image with commit hash
         if: steps.commit_hash_check.outputs.VERSION_EXISTS == 'false'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5.3.0
         with:
           context: .
           push: true
@@ -100,7 +100,7 @@ jobs:
 
       - name: Push Docker image with release version
         if: steps.release_version_check.outputs.RELEASE_VERSION_EXISTS == 'false'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5.3.0
         with:
           context: .
           push: true
