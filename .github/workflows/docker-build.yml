@@ -1,0 +1,108 @@
+name: Docker Build
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight
+  workflow_dispatch:
+
+jobs:
+  check_release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.get_release_version.outputs.release_version }}
+    steps:
+      - name: Get latest release version
+        id: get_release_version
+        run: |
+          RELEASE_VERSION=$(curl -s https://api.github.com/repos/AUTOMATIC1111/stable-diffusion-webui/releases/latest | jq -r '.tag_name')
+          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+  build:
+    needs: check_release
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: "${{ github.repository_owner }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get latest a1111 commit hash
+        id: a1111ui_hash
+        run: |
+          A1111UI_HASH=$(curl -s https://api.github.com/repos/AUTOMATIC1111/stable-diffusion-webui/commits/master | jq -r '.sha[:7]')
+          echo "A1111UI_HASH=$A1111UI_HASH" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if Docker version exists
+        id: commit_hash_check
+        env:
+          IMAGE_NAME: ${{ env.OWNER_LC }}/stable-diffusion-webui
+          IMAGE_TAG: ${{ steps.comfyui_hash.outputs.COMFYUI_HASH }}
+        run: |
+          TOKEN=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+          result=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" https://ghcr.io/v2/${IMAGE_NAME}/manifests/hash_${IMAGE_TAG})
+          if [ $result -eq 200 ]; then
+            echo "Image ${IMAGE_NAME}:hash_${IMAGE_TAG} already exists"
+            echo "VERSION_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image ${IMAGE_NAME}:hash_${IMAGE_TAG} does not exist"
+            echo "VERSION_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if release version exists
+        id: release_version_check
+        env:
+          IMAGE_NAME: ${{ env.OWNER_LC }}/stable-diffusion-webui
+          IMAGE_TAG: ${{ needs.check_release.outputs.release_version }}
+        run: |
+          TOKEN=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+          result=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" https://ghcr.io/v2/${IMAGE_NAME}/manifests/${IMAGE_TAG})
+          if [ $result -eq 200 ]; then
+            echo "Image ${IMAGE_NAME}:${IMAGE_TAG} already exists"
+            echo "RELEASE_VERSION_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image ${IMAGE_NAME}:${IMAGE_TAG} does not exist"
+            echo "RELEASE_VERSION_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: false
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:latest
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ needs.check_release.outputs.release_version }}
+
+      - name: Push Docker image with commit hash
+        if: steps.commit_hash_check.outputs.VERSION_EXISTS == 'false'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:latest
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:hash_${{ needs.check_release.outputs.release_version }}
+
+      - name: Push Docker image with release version
+        if: steps.release_version_check.outputs.RELEASE_VERSION_EXISTS == 'false'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/stable-diffusion-webui:${{ steps.a1111ui_hash.outputs.A1111UI_HASH }}
