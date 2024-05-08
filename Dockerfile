@@ -9,6 +9,12 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0
 
+# Create a non-root user
+RUN useradd -m appuser
+
+# Switch to the non-root user
+USER appuser
+
 # Set the working directory
 WORKDIR /app
 
@@ -17,12 +23,6 @@ RUN wget -q https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-web
 
 # Expose the port
 EXPOSE 7861
-
-# Create a non-root user
-RUN useradd -m appuser
-
-# Switch to the non-root user
-USER appuser
 
 # Set the entrypoint to run
 ENTRYPOINT ["bash", "webui.sh"]
